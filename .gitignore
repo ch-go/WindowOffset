@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+._*
+
+# Built applications and distribution packages
+*.app/
+*.dSYM/
+*.zip
+*.dmg
+*.pkg
+
+# Swift Package Manager and Xcode build output
+.build/
+.swiftpm/
+DerivedData/
+build/
+*.xcarchive/
+*.xcresult/
+
+# Local Xcode user settings
+xcuserdata/
+*.xcuserstate
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
