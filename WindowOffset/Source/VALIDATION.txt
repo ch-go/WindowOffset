@@ -1,0 +1,55 @@
+WindowOffset 1.4.0 delivery verification — 2026-10-24 (Asia/Shanghai)
+
+Host: macOS 27.0.1, Apple Silicon
+Toolchain: Apple Swift 6.4, /Library/Developer/CommandLineTools
+Deployment target: macOS 13.0
+No additional dependencies installed.
+
+PASS swift run LayoutChecks
+  15 checks: different sizes at identical origin; existing offsets reserved;
+  maximized windows keep original size; unique windows unchanged; immovable
+  anchors and unresizable windows; minimum dimensions do not block movement;
+  negative monitor coordinates; 100 windows and idempotency; fractional points;
+  diagnostic reasons; sequential additions preserve existing windows; creation
+  order independent of stack enumeration; overflow without shrinking;
+  user interaction rearms the same layout; AX-only feedback remains suppressed.
+  6 geometry confirmation checks: delayed application accepted;
+  ignored request bounded; user interference stops; main actor remains responsive;
+  a quick click already released still invalidates in-flight work;
+  default verification performs only one immediate read without timed waits.
+
+PASS ./scripts/check-logging.sh
+  Synthetic JSONL records, ordering, Unicode, geometry fields, flush,
+  file mode 0600, and bounded rotation with three historical files.
+  Uses disposable temporary test files, not real application diagnostics.
+
+PASS ./scripts/build-app.sh (release, arm64)
+PASS plutil -lint Info.plist
+PASS codesign --verify --strict WindowOffset.app
+PASS otool -L: only system frameworks and system Swift runtime dependencies;
+  no build-directory dependency or additional bundled framework required.
+PASS file: Mach-O 64-bit executable arm64
+
+Toolchain limitation: XCTest is absent in Command Line Tools. The layout
+checks use a dependency-free executable assertion runner instead. SwiftPM
+emits linker search-path warnings for absent optional developer directories;
+the build, linking, and signature verification succeed.
+
+Not performed: launching WindowOffset, granting Accessibility permission,
+or moving any real third-party windows. Desktop behavior, application-specific
+AX constraints, and App Expose layout remain unverified in a live session.
+The app is locally ad-hoc signed, not Developer ID signed/notarized.
+
+Responsiveness: no fixed event debounce; size readback is immediate-only.
+Position and rollback readback are also immediate-only; no one-second
+self-event suppression timer remains. The two-second fallback detector remains.
+Held mouse buttons suspend mutation until mouse-up; there is no busy-poll loop.
+Actual UI latency also depends on AX communication and system scheduling.
+
+Login item: compiled and linked against system ServiceManagement.
+Registration/unregistration and next-login launch were not exercised;
+no system login item settings were modified during verification.
+
+Size policy: no AXSize writes, including rollback. Position changes only.
+Identity is retained across transient empty AX lists and Space switches;
+new creation notifications allocate an increasing per-application identifier.
