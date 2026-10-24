@@ -18,3 +18,9 @@ if [[ ! -x "$APP_DIR/Contents/MacOS/WindowOffset" ]]; then
     exit 1
 fi
 echo "Built: $APP_DIR"
+
+# Distribute this archive rather than uploading the .app directory: download
+# services may recreate individual files without their executable permissions.
+ARCHIVE_PATH="$PROJECT_DIR/../WindowOffset-macOS-arm64.zip"
+ditto -c -k --sequesterRsrc --keepParent "$APP_DIR" "$ARCHIVE_PATH"
+echo "Packaged: $ARCHIVE_PATH"

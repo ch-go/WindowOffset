@@ -53,3 +53,16 @@ no system login item settings were modified during verification.
 Size policy: no AXSize writes, including rollback. Position changes only.
 Identity is retained across transient empty AX lists and Space switches;
 new creation notifications allocate an increasing per-application identifier.
+
+1.4.1 update — 2026-10-24
+PASS swift run LayoutChecks: 17 layout and 6 verification checks.
+Shared x OR shared y now triggers diagonal position-only adjustment.
+Includes Chrome (0,35)/(0,33), shared-y-only windows, both-axis candidate
+reservation, and no repeat movement after applying the result.
+README and in-app help use the same rule. Live 1.4.1 Chrome movement has
+not been exercised; the currently running older app is not replaced.
+
+1.4.2: axis equality uses strict distance < 1 logical point.
+PASS 17 layout + 6 verification checks, including fractional origins,
+shared x/y under one point, exactly one point remaining distinct.
+PASS release build, extracted archive permissions and signature.

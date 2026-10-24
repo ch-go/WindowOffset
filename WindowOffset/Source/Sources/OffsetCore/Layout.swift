@@ -27,9 +27,13 @@ public struct Adjustment {
 }
 
 public enum Layout {
-    // A small tolerance absorbs AX floating-point noise, not nearby logical points.
+    // Coordinates less than one logical point apart count as equal.
     public static func sameOrigin(_ a: CGPoint, _ b: CGPoint) -> Bool {
-        abs(a.x - b.x) < 0.01 && abs(a.y - b.y) < 0.01
+        abs(a.x - b.x) < 1 && abs(a.y - b.y) < 1
+    }
+
+    private static func sharesCoordinate(_ a: CGPoint, _ b: CGPoint) -> Bool {
+        abs(a.x - b.x) < 1 || abs(a.y - b.y) < 1
     }
 
     public static func plan(_ windows: [WindowGeometry], displays: [DisplayGeometry],
@@ -41,7 +45,7 @@ public enum Layout {
         let byCreation = windows.sorted { $0.id < $1.id }
         let ordered = byCreation.filter { !$0.movable } + byCreation.filter { $0.movable }
         for window in ordered {
-            if anchors.contains(where: { sameOrigin($0.frame.origin, window.frame.origin) }) {
+            if anchors.contains(where: { sharesCoordinate($0.frame.origin, window.frame.origin) }) {
                 duplicates.append(window)
             } else { anchors.append(window); report?(window.id, "anchor_or_unique") }
         }
@@ -54,10 +58,10 @@ public enum Layout {
                 area(window.frame.intersection($0.frame)) < area(window.frame.intersection($1.frame))
             }), area(window.frame.intersection(display.frame)) > 0 else { report?(window.id, "no_intersecting_display"); continue }
             var point = window.frame.origin
-            // Each occupied origin can block at most one diagonal candidate.
-            for _ in 0...windows.count {
+            // With fractional origins, each axis can block two one-point candidates.
+            for _ in 0...(4 * windows.count) {
                 point.x += step; point.y += step
-                if !occupied.contains(where: { sameOrigin($0, point) }) { break }
+                if !occupied.contains(where: { sharesCoordinate($0, point) }) { break }
             }
             let usable = display.usable
             guard point.x >= usable.minX, point.y >= usable.minY else { report?(window.id, "outside_usable_top_or_left"); continue }

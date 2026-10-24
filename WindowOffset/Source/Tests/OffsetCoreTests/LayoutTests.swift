@@ -24,6 +24,21 @@ final class LayoutTests {
         XCTAssertEqual(result.map(\.id), [1])
         XCTAssertEqual(result.first?.frame, CGRect(x: 101, y: 101, width: 500, height: 300))
     }
+    func testSharedXOrYTriggersAdjustment() {
+        // Chrome reproduction: same x, different y and size.
+        let chrome = [window(0, 0, 35, 1512, 949), window(1, 0, 33, 1492, 929)]
+        let result = Layout.plan(chrome, displays: [display])
+        XCTAssertEqual(result.map(\.id), [1])
+        XCTAssertEqual(result.first?.frame, CGRect(x: 1, y: 34, width: 1492, height: 929))
+        XCTAssertTrue(Layout.plan([chrome[0], WindowGeometry(id: 1, frame: result[0].frame)], displays: [display]).isEmpty)
+        let horizontal = Layout.plan([window(0), window(1, 500, 100)], displays: [display])
+        XCTAssertEqual(horizontal.first?.frame.origin, CGPoint(x: 501, y: 101))
+    }
+    func testCandidateMustBeFreeOnBothAxes() {
+        let result = Layout.plan([window(0), window(1), window(2, 101, 500), window(3, 500, 102)], displays: [display])
+        XCTAssertEqual(result.map(\.id), [1])
+        XCTAssertEqual(result.first?.frame.origin, CGPoint(x: 103, y: 103))
+    }
     func testExistingOffsetsReservedAndUntouched() {
         let result = Layout.plan([window(0), window(1), window(2, 101, 101), window(3)], displays: [display])
         XCTAssertEqual(result.map(\.id), [1, 3])
@@ -69,8 +84,11 @@ final class LayoutTests {
     }
     func testFractionalCoordinatesAndNoDisplay() {
         let result = Layout.plan([window(0, 100.5, 100.5), window(1, 100.5, 100.5), window(2, 100.6, 100.6)], displays: [display])
-        XCTAssertEqual(result.map(\.id), [1])
-        XCTAssertEqual(result.first?.frame.minX, 101.5)
+        XCTAssertEqual(result.map(\.id), [1, 2])
+        XCTAssertEqual(result.first?.frame.minX, 102.5)
+        XCTAssertTrue(Layout.plan([window(0), window(1, 101, 101)], displays: [display]).isEmpty)
+        XCTAssertEqual(Layout.plan([window(0), window(1, 100.5, 300)], displays: [display]).count, 1)
+        XCTAssertEqual(Layout.plan([window(0), window(1, 300, 100.5)], displays: [display]).count, 1)
         XCTAssertTrue(Layout.plan([window(0), window(1)], displays: []).isEmpty)
     }
     func testEveryWindowHasDiagnosticDecision() {
@@ -141,6 +159,8 @@ enum LayoutChecks {
     @MainActor static func main() async {
         let suite = LayoutTests()
         let checks: [(String, () -> Void)] = [
+            ("shared x or y triggers; Chrome regression and idempotency", suite.testSharedXOrYTriggersAdjustment),
+            ("candidate is free on both axes", suite.testCandidateMustBeFreeOnBothAxes),
             ("different sizes, same origin", suite.testDifferentSizeSameOriginMovesOnlyDuplicate),
             ("reserve existing offsets", suite.testExistingOffsetsReservedAndUntouched),
             ("maximized windows keep their full size", suite.testMaximizedWindowsKeepOriginalSize),

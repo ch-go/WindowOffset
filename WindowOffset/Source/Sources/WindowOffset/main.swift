@@ -99,7 +99,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func permissions() {
         let alert = NSAlert()
         alert.messageText = "允许“窗口微错位”调整窗口"
-        alert.informativeText = "请在“系统设置 → 隐私与安全性 → 辅助功能”中添加并开启 WindowOffset.app。授权后自动检测生效，无需授予屏幕录制或输入监控。\n\n本工具仅读取普通窗口的位置、大小及能力，并在重合时调整位置及必要尺寸。"
+        alert.informativeText = "请在“系统设置 → 隐私与安全性 → 辅助功能”中添加并开启 WindowOffset.app。授权后自动检测生效，无需授予屏幕录制或输入监控。\n\n本工具仅读取普通窗口的位置、大小及能力，并在横坐标或纵坐标相同时仅调整位置，保留原始大小。"
         alert.addButton(withTitle: "打开辅助功能设置")
         alert.addButton(withTitle: "稍后")
         NSApp.activate(ignoringOtherApps: true)
@@ -112,7 +112,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func help() {
         let alert = NSAlert()
         alert.messageText = "保留系统 App Exposé"
-        alert.informativeText = "同一应用中，仅左上角重合的普通窗口会逐一向右下偏移 1 逻辑点，已有错位保留。只修改位置，始终保留窗口大小，允许右边或下边因偏移而少量越界。新增窗口与已有窗口重合时，按跟踪到的创建顺序寻找下一个空位。\n\n支持保留菜单栏的铺满窗口；跳过原生独立 Space 全屏、最小化窗口及面板。鼠标释放后立即检查，没有固定防抖或延迟读回等待；不激活窗口、不修改叠放顺序。\n\n可在菜单开启“登录时自动启动”，下次登录自动运行。\n\n窗口微错位可能影响原生 App Exposé 排列，但系统如何排列并无保证。第三方应用可拒绝窗口调整，此时仅尝试一次并尽力恢复。"
+        alert.informativeText = "同一应用中，横坐标或纵坐标相同的普通窗口会逐一向右下偏移 1 逻辑点，直到横、纵坐标分别都不重复（同一坐标相差小于 1 点视为相同，正好相差 1 点视为不同）。只修改位置，始终保留窗口大小，允许右边或下边因偏移而少量越界。新增窗口与已有窗口任一坐标相同时，按跟踪到的创建顺序寻找下一个空位。\n\n支持保留菜单栏的铺满窗口；跳过原生独立 Space 全屏、最小化窗口及面板。鼠标释放后立即检查，没有固定防抖或延迟读回等待；不激活窗口、不修改叠放顺序。\n\n可在菜单开启“登录时自动启动”，下次登录自动运行。\n\n窗口微错位可能影响原生 App Exposé 排列，但系统如何排列并无保证。第三方应用可拒绝窗口调整，此时仅尝试一次并尽力恢复。"
         alert.runModal()
     }
     @objc private func openLogs() {
